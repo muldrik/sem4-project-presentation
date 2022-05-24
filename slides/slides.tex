@@ -4,7 +4,9 @@
 \usepackage[T2A]{fontenc}
 \usepackage{cmap}
 \usepackage{paratype}
+\usepackage{hyperref}
 \usepackage{minted} % для примеров кода (требует параметра -shell-escape)
+\usepackage[hashEnumerators,smartEllipses]{markdown}
 
 \usetheme{metropolis}
 \usefonttheme[]{professionalfonts}  % запрещаем beamer'у перезаписывать мат. шрифты
@@ -41,15 +43,15 @@
 
 \begin{frame}[plain]
   \begin{center}
-    \textbf{Имя и фамилия автора}
+    \textbf{Никита Митцев}
 
-    {\Large\textbf{Тема работы: довольно длинное название строки на две минимум}}
+    {\Large\textbf{Исследование методов оценки производительности Projector}}
 
-    Выпускная квалификационная работа
+    
 
-    {\small Научный руководитель: А.\,А.\,Выбегалло}
+    {\small Руководитель проекта: Евгений Лазурин}
 
-    ДАТА ЗАЩИТЫ
+    24.05.2022
   \end{center}
 
 
@@ -60,7 +62,7 @@
     \begin{column}{10cm}
       \small
           Факультет математики и~компьютерных наук СПбГУ\\
-          Программа <<Современное программирование>>
+          Программа <<Современное программирование>>, 2 курс
     \end{column}
   \end{columns}
 \end{frame}
@@ -68,139 +70,103 @@
 
 
 \begin{frame}
-\frametitle{Введение в предметную область}
+\frametitle{Что такое Projector}
 
 \begin{itemize}
-\item О чём здесь вообще речь? Для чего вообще этим всем стоит заниматься?
-\item В чём актуальность работы?
-\item Кто ещё этим занимается, с кем мы будем сравниваться?
-\item Этот слайд необходим для того, чтобы постановка задачи была понятнее.
-\item Вряд ли стоит делать больше двух таких слайдов, иначе вы не успеете рассказать о своей работе.
-\item На введение в предметную область должно уйти не более 15\% времени вашего доклада.
+\item Современная JetBrains IDE потребляет много ресурсов
+\item У больших компаний могут быть странные и строгие политики обращения с кодовой базой
+\item Команда хотела сделать удобный удаленный доступ к среде разработке. В общем случае - к произвольному приложению на Swing.
 \end{itemize}
-
 
 \end{frame}
 
 \begin{frame}
 \frametitle{Постановка задачи}
 \begin{enumerate}
-\item Разработать алгоритм решения задачи путешествующего сейлсмена\footnote{Крайне рекомендуется избегать англицизмов --- старайтесь использовать принятые в~русском языке термины.}, работающий за полиномиальное время.
-\item Построить программную implementation\footnote{Так тоже не надо.}, протестировать её~производительность и сравнить с конкурентами.
-\item Оформить результаты работы в виде доклада на~STOC\footnote{Злоупотреблять аббревиатурами также не стоит, используйте только действительно общепринятые и всем известные сокращения.}.
+  \item Команда не знает, как меняется производительность от версии к версии. Никаких измерений и тестов на начало работы не было.
+  \item Летом планируется разработка полноценной системы оценки производительности.
 \end{enumerate}
+Ожидалось подготовить исследование в свободной форме: какие метрики хочется подсчитывать и что для этого нужно реализовать
 \end{frame}
 
-\begin{frame}{Задача 1: формула с пояснениями}
-\small
-    Фильтр минимизирует среднеквадратическое отклонение цвета пикселя.
-    
-    \begin{equation*}\label{eq:wiener_nsr}
-    \hat{Y}(i, j) = \left[ \frac{\hat{H}^*(i, j)}{\left|\hat{H}(i, j)\right|^2 + \frac{S_n(i, j)}{S_s(i, j)}} \right] \times \hat{F}(i, j),
-    \end{equation*}
-\begin{itemize}
-    \item $Y$ -- восстановленное изображение,  $F$ -- наблюдаемое изображение,
-    \item $H$ -- функция рассеивания, $H^*$ --комплексное сопряжение $H$,
-    \item $S_n$ -- энергетический спектр шума -- $\left| \hat{N} \right|^2$,
-    \item $S_s$ -- энергетический спектр исходного изображения -- $\left| \hat{F} \right|^2$,
-    \item $\times$ -- умножение комплексных чисел.
-\end{itemize}
+\begin{frame}{Часть 1: исследую поток данных}
+  \begin{center}
+    \includegraphics[width=14cm]{images/ProjectorFlowchartBetter.png}
+  \end{center}
 \end{frame}
 
 
-\begin{frame}[fragile]
-\frametitle{Задача 2: код на языке программирования\footnote{Увлекаться кодом на слайдах не стоит, зато структурные и иные диаграммы обычно смотрятся хорошо.}}
-\begin{minted}{kotlin}
-fun main() {
-    val name = "stranger"
-    println("Hi, $name!")
-    print("Current count:")
-    for (i in 0..10) {
-        print(" $i")
-    }
-}
-\end{minted}
-\end{frame}
 
-\begin{frame}{Задача 2: результаты измерений в таблице}
-\centering
-\begin{tabular}{lccc}
-    Имя & Работа 1 & Работа 2 & Итог \\
-\hline\hline
-    Алиса & 8.0 & 9.0 & 8.5 \\
-    Боб & 9.0 & 9.8 & 9.4 \\
-    Чак & 9.1 & 9.3 & 9.2 \\
-\end{tabular}
-
-\begin{block}{Пояснения к таблице}
+\begin{frame}
+  \frametitle{Автоматизация. Главные преграды}
   \begin{itemize}
-  \item Таблицы могут требовать пояснений.
-  \item Что это за величины? Откуда они взялись?
-  \item Какие выводы можно сделать?
+    \item Подменить неконтролируемую JetBrains IDE на своё Swing приложение
+    \item Запускать сервер с автоматическим подключением управляемого клиента
   \end{itemize}
-\end{block}
-
 \end{frame}
 
 
 \begin{frame}
-\frametitle{Задача 2: результаты сравнения с конкурентами\footnote{Понятна ли ваша диаграмма? Не забыли ли вы легенду?}\footnote{Контрастно ли изображение? Помните, на проекторе всё может выглядеть хуже.}}
+\frametitle{Генерация отчётов - графики}
 \begin{center}
-\includegraphics[width=11cm]{images/graph.png}
+  \includegraphics[width=14cm]{images/createUpdateThreshold.png}
 \end{center}
 \end{frame}
 
 \begin{frame}
-\frametitle{Задача 3: основные трудности}
+  \frametitle{Генерация отчётов: метрики}
+  \scalebox{0.6}{
+     
+		\begin{tabular}{c|c|c|c|c}
+			Name & Params & Measurement Unit & Value & Standard deviation \\
+			\hline
+			Average & minTime=0, minObj=0 & ms & 1 & 0 \\
+			Peak rate & minTime=0, minObj=0 & millis / second & 110.3 & 2.4 \\
+			Peak rate & minTime=3, minObj=0 & millis / second & 87 & 1.6 \\
+			Peak rate & minTime=5, minObj=0 & millis / second & 80.7 & 2.5 \\
+			Peak rate & minTime=10, minObj=0 & millis / second & 67 & 3.3 \\
+			Peak rate & minTime=20, minObj=0 & millis / second & 54.3 & 4.2 \\
+			Peak rate & minTime=3, minObj=2 & millis / second & 28.7 & 2.5 \\
+			Peak rate & minTime=5, minObj=2 & millis / second & 27.3 & 2.9 \\
+			Peak rate & minTime=5, minObj=3 & millis / second & 14 & 2.4 \\
+			Power punishing rate & minTime=3, minObj=0 & (ms)^{1.2} / \text{second} & 177.7 & 5.3 \\
+			Power punishing rate & minTime=5, minObj=0 & (ms)^{1.2} / \text{second} & 169 & 6.2 \\
+			Power punishing rate & minTime=5, minObj=0 & (ms)^{1.5} / \text{second} & 559.3 & 22.9 \\
+			Power punishing rate & minTime=5, minObj=0 & (ms)^{2.0} / \text{second} & 5047.7 & 190.9 \\
+		\end{tabular}
+
+  }
+\end{frame}
+
+\begin{frame}
+\frametitle{Основные трудности}
 \begin{itemize}
-\item Мы всё классно сделали, но рецензенты STOC сформулировали ряд претензий к~работе, обозвали нас идиотами и отказались пускать на конференцию.
-\item Все замечания были исправлены, попробуем FOCS\footnote{Не забывайте про нежелательность англицизмов и аббревиатур.}!
+  \item Старые версии не поддерживаются и часто не собираются для сравнения
+  \item Тяжело оценивать метрики, не имея возможности запускать приложение на контролируемом сценарии
+  \item На любую метрику можно придумать такую ситуацию или оптимизацию, когда она не покажет изменений. Надо покрыть больше случаев, обойдясь малым количеством.
 \end{itemize}
 
 \end{frame}
 
 \begin{frame}
-\frametitle{Дополнительный слайд по работе в целом\footnote{Кстати, слайды с длинными перечислениями выглядят плохо. Старайтесь их избегать.}}
-\begin{itemize}
-\item Освоенные и применённые технологии
-\item Информация о внедрении
-\item Полученные в ходе выполнения работы навыки
-\item Вынесенные уроки
-\item Реальные планы на будущее (не надо фантазировать!)
-\item Ссылки на цитированную литературу --- их можно вынести в конец слайдов, но во время доклада не показывать.
-\end{itemize}
-
+  \frametitle{Результаты}
+  \begin{itemize}
+    \item Документ на англйском языке, где приведён анализ текущего состояния проекта и предложены решения по измерению различных показателей. Позже будет размещен в основном репозитории.
+    \item Написан код для генерации графиков и отчётов по результатам запуска.
+  \end{itemize}
+  Всё это будет использовано далее как основа для создания полноценной системы профилирования проекта.
+  
 \end{frame}
-
 
 \begin{frame}
-\frametitle{Результаты работы}
-
-\begin{enumerate}
-\item Разработан полиномиальный алгоритм решения задачи коммивояжёра.
-\item Программная реализация демонстрирует высочайшую производительность и превосходит все известные аналоги.
-\item Результаты подготовлены для представления на~FOCS.
-\end{enumerate}
-
-\vspace{5mm}\hrule\vspace{5mm}
-
-\begin{center}
-Имя, фамилия и контакты автора,\\ссылка на материалы работы, QR-код.
-\end{center}
-
+  \frametitle{Ссылки}
+  Автор: Никита Митцев, muldrik@yandex.ru\\
+{\small
+  \textit{Основной репозиторий проекта:} \href{https://github.com/JetBrains/projector-server}{https://github.com/JetBrains/projector-server}\\
+  \textit{Репозиторий с кодом для сбора статистики:} \href{https://github.com/muldrik/projector-server}{https://github.com/muldrik/projector-server}\\
+  \textit{Репозиторий с кодом для генерации отчётов и графиков:} \href{https://github.com/muldrik/projector-report-generator}{https://github.com/muldrik/projector-report-generator}
+}
 \end{frame}
-
-\begin{frame}[noframenumbering,plain]
-\frametitle{}
-\begin{center}
-  \Huge Спасибо за внимание!
-
-  Ваши вопросы?
-
-  {\color{red}Этот слайд не нужен! Удалите его\footnote{Сноски на слайдах тоже удалите: не нужно усложнять их структуру и содержимое. Не~забывайте, что многое можно просто сказать словами.}!}
-\end{center}
-\end{frame}
-
 
 
 \end{document}

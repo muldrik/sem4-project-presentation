@@ -7,5 +7,7 @@ clean:
 	latexmk -c
 	rm -f *.snm *.nav *.vrb *.synctex.gz
 	rm -rf _minted-slides
+	rm -rf slides.markdown.*
+	rm -rf _markdown_slides
 
 FORCE:
